@@ -4,7 +4,6 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nix-wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
   };
-
   outputs =
     {
       self,
@@ -13,18 +12,26 @@
     }:
     {
       lib = {
-        wrapPackages =
+        configure =
           {
             pkgs,
             configDir,
             packages,
+            extraArgs ? { },
           }:
+          let
+            lib = nixpkgs.lib;
+            moduleArgs = {
+              inherit pkgs lib;
+            }
+            // extraArgs;
+          in
           map (
             pkg:
             let
               pkgName = pkg.pname or pkg.name;
               configPath = configDir + "/${pkgName}.nix";
-              customConfig = if builtins.pathExists configPath then import configPath else { };
+              customConfig = if builtins.pathExists configPath then import configPath moduleArgs else { };
               wrapArgs = {
                 inherit pkgs;
               }
