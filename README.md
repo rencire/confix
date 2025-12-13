@@ -39,6 +39,7 @@ We'll use an example with [tealdeer](https://github.com/tealdeer-rs/tealdeer), a
 TODO
 #### Option C: flake-parts
 TODO
+
 ### 2. Add configuration file
 Each package config file is a simple attribute set passed to the package's wrapper. Configuration files receive standard NixOS module arguments (`pkgs`, `lib`) that you can destructure. Example `config/tealdeer.nix`, translated from [original
 toml example](https://tealdeer-rs.github.io/tealdeer/config.html) :
@@ -74,7 +75,13 @@ toml example](https://tealdeer-rs.github.io/tealdeer/config.html) :
 ```
 Config files are optional—if a package has no config file, it will be used as-is. The exact configuration depend on what [`nix-wrapper-modules`](https://github.com/BirdeeHub/nix-wrapper-modules) supports for each package.
 ### 3. Build
-Build your shell, and that's it! Now you have all your programs' settings organized in `nix` files, and not in home folder!
+Build your shell:
+```shell
+nix develop
+```
+
+Now you have all your programs available with their settings organized in `nix` files, and not in home folder!
+
 ## API
 ### `configure`
 ```nix
@@ -96,3 +103,8 @@ All config files automatically receive `pkgs` and `lib` as arguments. Additional
 5. Passes the merged config to `nix-wrapper-modules` for wrapping
 
 This allows per-package customization without modifying nixpkgs or using overlays.
+
+
+# TODO
+- [] Enable use case for consumers using flakelight and flake-parts
+- [] Enable use case for nixos/darwin-nix modules
