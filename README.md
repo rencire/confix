@@ -39,18 +39,41 @@ We'll use an example with [tealdeer](https://github.com/tealdeer-rs/tealdeer), a
 TODO
 #### Option C: flake-parts
 TODO
-## 2. Add configuration file
-Each package config file is a simple attribute set passed to the package's wrapper. Configuration files receive standard NixOS module arguments (`pkgs`, `lib`) that you can destructure. Example `config/tealdeer.nix`:
+### 2. Add configuration file
+Each package config file is a simple attribute set passed to the package's wrapper. Configuration files receive standard NixOS module arguments (`pkgs`, `lib`) that you can destructure. Example `config/tealdeer.nix`, translated from [original
+toml example](https://tealdeer-rs.github.io/tealdeer/config.html) :
 ```nix
 { pkgs, lib }:
 {
-  settings.updates.auto_update = false;
-  settings.style.foreground = "cyan";
-  settings.style.background = "default";
+  settings = {
+    display = {
+      compact = false;
+      use_pager = true;
+      show_title = false;
+    };
+    style = {
+      command_name = {
+        foreground = "red";
+      };
+      example_text = {
+        foreground = "green";
+      };
+      example_code = {
+        foreground = "blue";
+      };
+      example_variable = {
+        foreground = "blue";
+        underline = true;
+      };
+    };
+    updates = {
+      auto_update = true;
+    };
+  };
 }
 ```
-Config files are optional—if a package has no config file, it will be used as-is. The exact settings depend on what [`nix-wrapper-modules`](https://github.com/BirdeeHub/nix-wrapper-modules) supports for each package.
-## 3. Build
+Config files are optional—if a package has no config file, it will be used as-is. The exact configuration depend on what [`nix-wrapper-modules`](https://github.com/BirdeeHub/nix-wrapper-modules) supports for each package.
+### 3. Build
 Build your shell, and that's it! Now you have all your programs' settings organized in `nix` files, and not in home folder!
 ## API
 ### `configure`
