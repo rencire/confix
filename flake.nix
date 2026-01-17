@@ -37,7 +37,7 @@
               }
               // customConfig;
             in
-            nix-wrapper-modules.wrapperModules."${pkgName}".wrap wrapArgs
+            nix-wrapper-modules.wrappedModules."${pkgName}".wrap wrapArgs
           ) packages;
       };
     };
