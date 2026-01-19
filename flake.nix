@@ -35,20 +35,17 @@
                   filename: _:
                     let
                       pkgName = lib.removeSuffix ".nix" filename;
-                      pkg = pkgs.${pkgName};
                       customConfig = import (configDir + "/${filename}") moduleArgs;
                     in
                     lib.nameValuePair pkgName {
                       inherit
                         pkgName
-                        pkg
                         customConfig;
-                      enable = customConfig.enable or true;
                     }
                 )
                 nixFiles;
 
-              enabledResults = lib.filterAttrs (name: value: value.enable) results;
+              enabledResults = lib.filterAttrs (name: value: (value.customConfig.enable or true)) results;
             in
             lib.mapAttrs
               (
@@ -56,12 +53,12 @@
                 wrapPackage {
                   inherit pkgs;
                   inherit (value)
-                    pkg
                     pkgName
                     customConfig;
                 }
               )
-              enabledResults;
+              enabledResults
+          ;
 
           configureAsList = args: builtins.attrValues (configure args);
 
@@ -81,14 +78,13 @@
                     pkgs
                     pkgName
                     customConfig;
-                  pkg = pkgs.${pkgName};
                 }
               )
-              packages;
+              packages
+          ;
 
           wrapPackage =
             { pkgs
-            , pkg
             , pkgName
             , customConfig
             ,
@@ -99,8 +95,11 @@
             in
             if hasWrapper then
               inputs.nix-wrapper-modules.wrappedModules."${pkgName}".wrap wrapArgs
+            else if customConfig ? package then
+              customConfig.package
             else
-              pkg;
+              pkgs.${pkgName}
+          ;
         };
         # Checks
         checks = pkgs: {
