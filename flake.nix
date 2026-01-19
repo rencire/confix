@@ -17,59 +17,133 @@
           "aarch64-darwin"
         ];
         # Your library functions
-        lib = {
+        lib = rec {
           configure =
-            {
-              pkgs,
-              configDir,
-              packages,
-              extraArgs ? { },
+            { pkgs
+            , configDir
+            , extraArgs ? { }
+            ,
             }:
             let
               lib = inputs.nixpkgs.lib;
-              moduleArgs = {
-                inherit pkgs lib;
-              }
-              // extraArgs;
+              moduleArgs = { inherit pkgs lib; } // extraArgs;
+              configFiles = builtins.readDir configDir;
+              nixFiles = lib.filterAttrs (name: type: type == "regular" && lib.hasSuffix ".nix" name) configFiles;
+
+              results = lib.mapAttrs'
+                (
+                  filename: _:
+                    let
+                      pkgName = lib.removeSuffix ".nix" filename;
+                      pkg = pkgs.${pkgName};
+                      customConfig = import (configDir + "/${filename}") moduleArgs;
+                    in
+                    lib.nameValuePair pkgName {
+                      inherit
+                        pkgName
+                        pkg
+                        customConfig;
+                      enable = customConfig.enable or true;
+                    }
+                )
+                nixFiles;
+
+              enabledResults = lib.filterAttrs (name: value: value.enable) results;
             in
-            map (
-              pkg:
-              let
-                pkgName = pkg.pname or pkg.name;
-                configPath = configDir + "/${pkgName}.nix";
-                customConfig = if builtins.pathExists configPath then import configPath moduleArgs else { };
-
-                # Check if wrapper exists
-                hasWrapper = inputs.nix-wrapper-modules.wrappedModules ? "${pkgName}";
-
-                wrapArgs = {
+            lib.mapAttrs
+              (
+                name: value:
+                wrapPackage {
                   inherit pkgs;
+                  inherit (value)
+                    pkg
+                    pkgName
+                    customConfig;
                 }
-                // customConfig;
-              in
-              if hasWrapper then inputs.nix-wrapper-modules.wrappedModules."${pkgName}".wrap wrapArgs else pkg
-            ) packages;
+              )
+              enabledResults;
+
+          configureAsList = args: builtins.attrValues (configure args);
+
+          configureInline =
+            { pkgs
+            , packages
+            ,
+            }:
+            let
+              lib = inputs.nixpkgs.lib;
+            in
+            lib.mapAttrs
+              (
+                pkgName: customConfig:
+                wrapPackage {
+                  inherit
+                    pkgs
+                    pkgName
+                    customConfig;
+                  pkg = pkgs.${pkgName};
+                }
+              )
+              packages;
+
+          wrapPackage =
+            { pkgs
+            , pkg
+            , pkgName
+            , customConfig
+            ,
+            }:
+            let
+              hasWrapper = inputs.nix-wrapper-modules.wrappedModules ? "${pkgName}";
+              wrapArgs = { inherit pkgs; } // (builtins.removeAttrs customConfig [ "enable" ]);
+            in
+            if hasWrapper then
+              inputs.nix-wrapper-modules.wrappedModules."${pkgName}".wrap wrapArgs
+            else
+              pkg;
         };
         # Checks
         checks = pkgs: {
+          test-new-api =
+            let
+              configured = inputs.self.lib.configure {
+                inherit pkgs;
+                configDir = ./tests/mock-config;
+              };
+              configuredList = inputs.self.lib.configureAsList {
+                inherit pkgs;
+                configDir = ./tests/mock-config;
+              };
+              inline = inputs.self.lib.configureInline {
+                inherit pkgs;
+                packages = {
+                  hello = { };
+                };
+              };
+            in
+            pkgs.writeText "test-new-api-results" (
+              assert builtins.isAttrs configured;
+              assert configured ? tealdeer;
+              assert !(configured ? "disabled-pkg");
+              assert builtins.isList configuredList;
+              assert builtins.length configuredList == 1;
+              assert inline ? hello;
+              "success"
+            );
+
           test-configure-invalid-package =
             let
-              fakePackage = pkgs.runCommand "fake" { } "touch $out" // {
-                pname = "nonexistent-wrapper-package";
-              };
-
               evalResult = builtins.tryEval (
                 let
-                  packages = inputs.self.lib.configure {
+                  # Testing that we can configure a package that doesn't have a wrapper
+                  packages = inputs.self.lib.configureInline {
                     inherit pkgs;
-                    configDir = pkgs.emptyDirectory;
-                    packages = [ fakePackage ];
+                    packages = {
+                      hello = { };
+                    };
                   };
                 in
-                # Force evaluation of the fakePackage in order to validate that we
-                # are calling inputs.nix-wrapper-modules correctly
-                # If not, then this test will error before reaching our assertion
-                builtins.seq (builtins.elemAt packages 0) true
+                builtins.seq packages.hello true
               );
             in
             pkgs.writeText "test-configure-invalid-package" (
