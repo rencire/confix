@@ -90,11 +90,12 @@
             ,
             }:
             let
-              hasWrapper = inputs.nix-wrapper-modules.wrappedModules ? "${pkgName}";
+              wrapperSet = inputs.nix-wrapper-modules.wrappers;
+              hasWrapper = wrapperSet ? "${pkgName}";
               wrapArgs = { inherit pkgs; } // (builtins.removeAttrs customConfig [ "enable" ]);
             in
             if hasWrapper then
-              inputs.nix-wrapper-modules.wrappedModules."${pkgName}".wrap wrapArgs
+              wrapperSet."${pkgName}".wrap wrapArgs
             else if customConfig ? package then
               customConfig.package
             else
@@ -149,6 +150,33 @@
               assert evalResult.success;
               "success"
             );
+        };
+
+        apps = { act, docker, writeShellApplication, ... }: {
+          test-update-workflow =
+            let
+              runner = writeShellApplication {
+                name = "test-update-workflow";
+                runtimeInputs = [
+                  act
+                  docker
+                ];
+                text = ''
+                  set -euo pipefail
+
+                  if ! docker ps >/dev/null 2>&1; then
+                    echo "docker cannot reach a daemon; if you use Colima, start it with: colima start" >&2
+                    exit 1
+                  fi
+
+                  exec act workflow_dispatch \
+                    -P ubuntu-latest=catthehacker/ubuntu:act-latest \
+                    -W .github/workflows/update-flake-inputs.yml \
+                    "$@"
+                '';
+              };
+            in
+            "${runner}/bin/test-update-workflow";
         };
       }
     );
