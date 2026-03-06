@@ -1,8 +1,8 @@
-name: Update flake inputs
+name: Update nixpkgs
 
 on:
   schedule:
-    - cron: "0 17 * * *"
+    - cron: "0 17 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -11,11 +11,11 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: update-flake-inputs
+  group: update-nixpkgs
   cancel-in-progress: false
 
 jobs:
-  update-flake-inputs:
+  update-nixpkgs:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,8 +28,8 @@ jobs:
       - name: Configure Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v13
 
-      - name: Update flake inputs
-        run: nix flake update flakelight nix-wrapper-modules
+      - name: Update nixpkgs
+        run: nix flake update nixpkgs
 
       - name: Detect lockfile changes
         id: changes
@@ -49,13 +49,12 @@ jobs:
         id: create-pr
         uses: peter-evans/create-pull-request@v7
         with:
-          branch: ci/update-flake-inputs
-          commit-message: "chore: update flake inputs"
-          title: "chore: update flake inputs"
+          branch: ci/update-nixpkgs
+          commit-message: "chore: update nixpkgs"
+          title: "chore: update nixpkgs"
           body: |
             Automated update for:
-            - `flakelight`
-            - `nix-wrapper-modules`
+            - `nixpkgs`
 
             Validation:
             - `nix flake check --no-build`
