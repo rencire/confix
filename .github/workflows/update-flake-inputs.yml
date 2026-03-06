@@ -1,0 +1,69 @@
+name: Update flake inputs
+
+on:
+  schedule:
+    - cron: "0 17 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-flake-inputs
+  cancel-in-progress: false
+
+jobs:
+  update-flake-inputs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v19
+
+      - name: Update flake inputs
+        run: |
+          nix flake lock --update-input flakelight
+          nix flake lock --update-input nix-wrapper-modules
+
+      - name: Detect lockfile changes
+        id: changes
+        run: |
+          if git diff --quiet -- flake.lock; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate flake
+        if: steps.changes.outputs.changed == 'true'
+        run: nix flake check --no-build
+
+      - name: Create or update pull request
+        if: steps.changes.outputs.changed == 'true'
+        id: create-pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: ci/update-flake-inputs
+          commit-message: "chore: update flake inputs"
+          title: "chore: update flake inputs"
+          body: |
+            Automated update for:
+            - `flakelight`
+            - `nix-wrapper-modules`
+
+            Validation:
+            - `nix flake check --no-build`
+          delete-branch: true
+          add-paths: |
+            flake.lock
+
+      - name: Enable pull request auto-merge
+        if: steps.changes.outputs.changed == 'true' && steps.create-pr.outputs.pull-request-operation != 'closed'
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          pull-request-number: ${{ steps.create-pr.outputs.pull-request-number }}
+          merge-method: squash
