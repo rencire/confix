@@ -152,6 +152,17 @@
             );
         };
 
+        devShells.default = {
+          packages =
+            pkgs: with pkgs; [
+              act
+              actionlint
+              docker
+              gh
+              lefthook
+            ];
+        };
+
         apps = { act, docker, writeShellApplication, ... }: {
           test-update-workflow =
             let
