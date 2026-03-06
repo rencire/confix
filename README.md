@@ -104,6 +104,11 @@ nix develop
 Now you have all your programs available with their settings organized in `nix`
 files, and not in home folder!
 
+## Development
+
+Developer workflow notes live in
+[DEVELOPERS.md](/Users/ren/projects/oss/confix/DEVELOPERS.md).
+
 ## API
 
 Full documentation is available in
