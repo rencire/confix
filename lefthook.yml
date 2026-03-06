@@ -1,0 +1,9 @@
+pre-push:
+  parallel: true
+  commands:
+    flake-check:
+      glob: "{flake.nix,flake.lock,tests/**/*.nix}"
+      run: nix flake check --no-build
+    actionlint:
+      glob: ".github/workflows/*.yml"
+      run: actionlint .github/workflows/*.yml
