@@ -6,7 +6,7 @@
     strategy_options = {
       checkpoint_remote = {
         provider = "github";
-        repo = "rencire/confix";
+        repo = "rencire/confix-checkpoints";
       };
     };
   };

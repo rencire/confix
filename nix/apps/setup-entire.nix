@@ -14,12 +14,9 @@ let
           ${settingsJson}
     JSONEOF
 
-          echo "-> Enabling entire in project..."
-          entire enable -y
-
           ${lib.concatStringsSep "\n" (map (agent: ''
-            echo "-> Adding agent ${agent}..."
-            entire agent add "${agent}"
+            echo "-> Enabling entire for ${agent}..."
+            entire enable -y --agent "${agent}"
           '') cfg.agents)}
 
           echo "entire-init complete"
