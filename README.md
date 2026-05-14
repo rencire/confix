@@ -109,6 +109,24 @@ files, and not in home folder!
 Developer workflow notes live in
 [DEVELOPERS.md](/Users/ren/projects/oss/confix/DEVELOPERS.md).
 
+### Setup agent tooling
+
+After cloning the repo, run these one-shot setup commands to bootstrap AI agent
+tooling:
+
+```shell
+nix run .#setup-entire
+nix run .#setup-gstack
+```
+
+- `setup-entire` configures [Entire](https://github.com/rencire/entire-cli) for
+  session tracking across AI coding agents.
+- `setup-gstack` installs [gstack](https://github.com/garrytan/gstack) skills
+  locally for the configured agents.
+
+Configure agents and checkpoints in `nix/config/setup-entire-config.nix` and
+gstack hosts and team mode in `nix/config/setup-gstack-config.nix`.
+
 ## API
 
 Full documentation is available in

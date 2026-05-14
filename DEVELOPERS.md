@@ -15,6 +15,12 @@ The default dev shell includes:
 - `docker`
 - `gh`
 - `lefthook`
+- `entire` — AI session tracking
+- `opencode` — OpenCode AI coding agent
+- `bun` — JavaScript runtime for agent plugins
+
+The dev shell also installs agent skill bundles (rencire skills) into common
+harness targets on enter.
 
 Prefer adding developer-facing tools from `nixpkgs` to the project's dev shell
 before introducing ad hoc installers or one-off bootstrap scripts.
