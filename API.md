@@ -168,12 +168,11 @@ lib.configureInline :: { pkgs, packages } -> Attrs
 
 ### Package configuration file structure
 
-If using `configure` or `configureAsList`, the `<package_name>.nix` file must be a function
-that returns an attribute set, with optional configuration.
+If using `configure` or `configureAsList`, the `<package_name>.nix` file must be
+a function that returns an attribute set, with optional configuration.
 
-If there are no configuration attr names and values, then it still needs to return an
-empty attrset:
-**Example**
+If there are no configuration attr names and values, then it still needs to
+return an empty attrset: **Example**
 
 ```nix
 { ... }: {}
@@ -194,30 +193,33 @@ an `enable` flag at the top level of the configuration attribute set.
   settings = { ... };
 }
 ```
-#### `package` 
 
-By default, we use `pkgs.<package_name>` for the package derivation.
-We can set `package` to be a different package derivation if we want to override it.
+#### `package`
+
+By default, we use `pkgs.<package_name>` for the package derivation. We can set
+`package` to be a different package derivation if we want to override it.
 
 **Example: `config/amp-cli.nix`**
+
 ```nix
 { pkgs, lib}:
 {
   package = pkgs.my_custom_amp-cli;
 }
 ```
-This option originally comes from module in [`nix-wrapper-modules`][1]. If the package
-(e.g. amp-cli in this example) has a module in [`nix-wrapper-modules`][1], then this option
-only works if that module supports it.
 
-I haven't verified if every package's module in [`nix-wrapper-modules`][1] supports the
-`package` option.  But for the case where the package doesn't have a module defined
-in [`nix-wrapper-modules`][1], we will use the derivation assigned to `package` option if
-it is defined in the file.
+This option originally comes from module in [`nix-wrapper-modules`][1]. If the
+package (e.g. amp-cli in this example) has a module in
+[`nix-wrapper-modules`][1], then this option only works if that module supports
+it.
+
+I haven't verified if every package's module in [`nix-wrapper-modules`][1]
+supports the `package` option. But for the case where the package doesn't have a
+module defined in [`nix-wrapper-modules`][1], we will use the derivation
+assigned to `package` option if it is defined in the file.
 
 #### Other options
-For all other options, refer to the package's respective module in [`nix-wrapper-modules`][1]
----
 
+## For all other options, refer to the package's respective module in [`nix-wrapper-modules`][1]
 
-[1]: <https://github.com/BirdeeHub/nix-wrapper-modules>
+[1]: https://github.com/BirdeeHub/nix-wrapper-modules
