@@ -219,6 +219,23 @@ result-*
 .factory/skills/
 
 # ---------------------------------------------------------------
+# Agent harness state / generated config
+# ---------------------------------------------------------------
+.claude/
+.opencode/
+.agents/checks/
+.codex/
+.cursor/
+.factory/
+.gemini/
+.kiro/
+
+# Keep the shared Entire checkpoint config, but ignore runtime state.
+.entire/*
+!.entire/settings.json
+!.entire/.gitignore
+
+# ---------------------------------------------------------------
 # gstack local data
 # ---------------------------------------------------------------
 .gstack/
