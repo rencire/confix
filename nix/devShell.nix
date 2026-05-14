@@ -1,12 +1,14 @@
-{ pkgs, outputs, ... }:
+{ pkgs, ... }:
 let
   inherit (pkgs) lib;
   inp = pkgs.inputs;
   system = pkgs.stdenv.hostPlatform.system;
 
+  myLib = import ./lib.nix { inputs = inp; };
+
   agentSkillsLib = inp."agent-skills".lib."agent-skills";
   agentSkillsConfig = import ./config/agent-skills-config.nix;
-  agentBundle = outputs.lib.agentBundle {
+  agentBundle = myLib.agentBundle {
     inherit (agentSkillsConfig) skillSets formats;
   };
 
@@ -16,7 +18,7 @@ let
     }
   );
 
-  configured = outputs.lib.configure {
+  configured = myLib.configure {
     pkgs = pkgs';
     configDir = ./confix;
   };
