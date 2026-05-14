@@ -31,7 +31,7 @@ jobs:
           use-flakehub: false
 
       - name: Update flake inputs
-        run: nix flake update nixpkgs flakelight nix-wrapper-modules
+        run: nix flake update
 
       - name: Detect lockfile changes
         id: changes
@@ -63,9 +63,7 @@ jobs:
           title: "chore: update flake inputs"
           body: |
             Automated update for:
-            - `nixpkgs`
-            - `flakelight`
-            - `nix-wrapper-modules`
+            - all flake inputs
 
             Validation:
             - `nix flake check --no-build`
